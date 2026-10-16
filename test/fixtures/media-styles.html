@@ -1,0 +1,63 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>media styles</title>
+<style>
+  /* CSS on canvases and videos that the html-in-canvas compositor reproduces itself. */
+  body { margin: 0; background: #0b1020; font: 600 28px system-ui, sans-serif; color: #fff; }
+  canvas, video { position: absolute; display: block; }
+  /* rounded, scaled ancestor that clips an overflowing WebGL canvas; DOM caption on top */
+  .frame { position: absolute; left: 40px; top: 40px; width: 360px; height: 240px; overflow: hidden; border-radius: 40px;
+    background: #2a3550; transform: scale(.9); transform-origin: 0 0; }
+  #gl { left: -20px; top: -20px; width: 400px; height: 280px; }
+  .caption { position: absolute; left: 24px; bottom: 20px; }
+  /* own radius, border, padding, background, outer shadow and filter */
+  #rounded { left: 440px; top: 40px; width: 340px; height: 210px; padding: 8px; border: 6px solid rgba(255, 255, 255, .5);
+    border-radius: 28px; background: #f2a541; box-shadow: 0 18px 40px rgba(0, 0, 0, .7); filter: saturate(1.6) brightness(1.1); }
+  /* clip-path circle and a blend mode against the page background */
+  #circle { left: 840px; top: 40px; width: 360px; height: 240px; clip-path: circle(42% at 50% 50%); mix-blend-mode: screen; }
+  /* object-fit / object-position, for a canvas and for a video */
+  #fit { left: 40px; top: 330px; width: 300px; height: 200px; object-fit: contain; object-position: left top; border: 2px solid #fff4; }
+  #video { left: 400px; top: 330px; width: 360px; height: 200px; object-fit: cover; border-radius: 20px; }
+  /* polygon clip-path after a drop-shadow + blur filter */
+  #poly { left: 820px; top: 320px; width: 300px; height: 220px; clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .8)) blur(1px); }
+  /* an ancestor's clip-path */
+  .oval { position: absolute; left: 40px; top: 560px; width: 560px; height: 140px; clip-path: ellipse(48% 45% at 50% 50%); }
+  #band { left: 0; top: 0; width: 560px; height: 140px; }
+</style></head>
+<body>
+<div class="frame"><canvas id="gl" width="400" height="280"></canvas><div class="caption">WebGL</div></div>
+<canvas id="rounded" width="340" height="210"></canvas>
+<canvas id="circle" width="360" height="240"></canvas>
+<canvas id="fit" width="400" height="100"></canvas>
+<video id="video" src="media.mp4" muted playsinline preload="auto"></video>
+<canvas id="poly" width="300" height="220"></canvas>
+<div class="oval"><canvas id="band" width="560" height="140"></canvas></div>
+<script>
+const gl = document.getElementById('gl').getContext('webgl2', { alpha: false });
+const ctx = id => document.getElementById(id).getContext('2d');
+function stripes(c, t, hue) {
+  const { width: w, height: h } = c.canvas;
+  for (let x = -h; x < w + h; x += 24) {
+    c.fillStyle = `hsl(${hue + x / 4 + t * 90}, 70%, ${x % 48 ? 55 : 35}%)`;
+    c.beginPath(); c.moveTo(x, 0); c.lineTo(x + 24, 0); c.lineTo(x + 24 - h, h); c.lineTo(x - h, h); c.fill();
+  }
+  c.fillStyle = '#fff'; c.fillRect(0, 0, 12, 12); c.fillRect(w - 12, h - 12, 12, 12); // corner markers
+}
+const video = document.getElementById('video');
+window.webreel = {
+  duration: 1,
+  ready: new Promise(resolve => {
+    const seeked = () => { video.removeEventListener('seeked', seeked); resolve(); };
+    video.addEventListener('loadeddata', () => { video.addEventListener('seeked', seeked); video.currentTime = 0.5; }, { once: true });
+  }),
+  frame(t) {
+    gl.clearColor(.2 + .5 * t, .45, .7 - .4 * t, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.enable(gl.SCISSOR_TEST); gl.scissor(0, 0, 40, 40); gl.clearColor(1, 1, 1, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.scissor(360, 240, 40, 40); gl.clear(gl.COLOR_BUFFER_BIT); gl.disable(gl.SCISSOR_TEST);
+    stripes(ctx('rounded'), t, 0); stripes(ctx('circle'), t, 200); stripes(ctx('fit'), t, 120); stripes(ctx('poly'), t, 300); stripes(ctx('band'), t, 40);
+  }
+};
+</script>
+</body></html>

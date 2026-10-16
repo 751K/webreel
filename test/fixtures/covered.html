@@ -1,0 +1,16 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>covered fixture</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  #gl { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+  /* an opaque sibling panel drawn above the canvas: html-in-canvas cannot layer this */
+  #panel { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: #223; color: #fff; font: 64px sans-serif; }
+</style>
+<canvas id="gl" width="1920" height="1080"></canvas>
+<div id="panel">opaque panel above WebGL</div>
+<script>
+  const gl = document.getElementById('gl').getContext('webgl2');
+  // The older name window.film, kept here to test that it still works.
+  window.film = { duration: 1, frame(t) { gl.clearColor(t, 0.3, 0.5, 1); gl.clear(gl.COLOR_BUFFER_BIT); document.getElementById('panel').textContent = 'frame ' + Math.round(t * 30); } };
+</script>

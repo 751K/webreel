@@ -1,0 +1,27 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>clock: CSS keyframes</title>
+<!-- No window.webreel: plain CSS animations, as LLM-written pages often are. The
+     length (2.5 s) is inferred from the animations. -->
+<style>
+  html, body { margin: 0; background: #0b1020; color: #fff; font: 700 72px/1.2 "PingFang SC", sans-serif; overflow: hidden; }
+  #box { position: absolute; left: 0; top: 600px; width: 120px; height: 120px; background: #ef476f; animation: slide 2s linear forwards; }
+  @keyframes slide { from { transform: translateX(0); } to { transform: translateX(1000px); } }
+  .title { position: absolute; left: 160px; top: 160px; opacity: 0; animation: rise .8s ease-out .3s forwards; }
+  .sub { position: absolute; left: 160px; top: 300px; font-size: 40px; color: #ffd166; opacity: 0; animation: rise .8s ease-out 1.2s forwards; }
+  @keyframes rise { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+  #done { position: absolute; left: 160px; top: 820px; font-size: 36px; color: #06d6a0; }
+  .bar { position: absolute; left: 1300px; width: 60px; bottom: 200px; background: #3b8fd9; transform-origin: bottom; animation: grow 1.5s cubic-bezier(.2,.8,.2,1) forwards; }
+  @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+</style>
+<div class="title">纯 CSS 动画</div>
+<div class="sub">没有 window.webreel，也能导出</div>
+<div id="box"></div>
+<div class="bar" style="height:300px;animation-delay:.2s"></div>
+<div class="bar" style="left:1400px;height:450px;animation-delay:.5s"></div>
+<div class="bar" style="left:1500px;height:200px;animation-delay:.8s;animation-duration:1.7s"></div>
+<div id="done">进行中</div>
+<script>
+  // animationend must still fire once the box reaches the end (t = 2 s).
+  document.getElementById('box').addEventListener('animationend', () => { document.getElementById('done').textContent = 'animationend 已触发'; });
+</script>

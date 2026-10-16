@@ -1,0 +1,16 @@
+{
+  "name": "webreel",
+  "version": "0.1.0",
+  "description": "Export animated web pages to video (MP4, 10-bit HEVC, ProRes with alpha), built for agents",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "bin": { "webreel": "render.mjs" },
+  "files": ["render.mjs", "page/", "README.md", "README.zh-CN.md", "SKILL.md", "MANUAL.md", "LICENSE"],
+  "engines": { "node": ">=20" },
+  "os": ["darwin"],
+  "keywords": ["video", "html", "animation", "export", "prores", "hevc", "agent"],
+  "scripts": {
+    "test": "sh test/fixtures.sh"
+  }
+}

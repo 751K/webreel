@@ -1,0 +1,45 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>protocol fixture</title>
+<style>
+  html, body { margin: 0; background: #000; }
+  /* stage background sits under the WebGL canvas: lifted out of the snapshot */
+  #stage { position: relative; width: 1280px; height: 720px; background: #0b1020; overflow: hidden;
+    font: 600 48px/1.2 "PingFang SC", sans-serif; color: #fff; }
+  #gl { position: absolute; left: 640px; top: 120px; width: 560px; height: 480px; }
+  .card { position: absolute; left: 60px; top: 100px; width: 480px; padding: 32px; border-radius: 24px;
+    background: linear-gradient(135deg, #1e3a5f, #7b2ff7); box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+  .dot { position: absolute; width: 48px; height: 48px; border-radius: 50%; background: #ef476f; top: 520px; }
+  .cap { position: absolute; left: 60px; bottom: 40px; font-size: 32px; }
+  .tag { position: absolute; left: 700px; top: 160px; font-size: 28px; padding: 6px 14px; border-radius: 8px; background: rgba(0,0,0,.55); }
+</style>
+<div id="stage">
+  <canvas id="gl" width="560" height="480"></canvas>
+  <div class="card"><span id="title">帧 0</span><br><small style="font-size:26px">CSS + WebGL + SVG</small>
+    <svg width="160" height="60"><circle cx="30" cy="30" r="24" fill="#ffd166"/><rect x="70" y="8" width="80" height="44" rx="8" fill="#06d6a0"/></svg></div>
+  <div class="dot" id="dot"></div>
+  <div class="tag">标注压在 WebGL 上</div>
+  <div class="cap" id="cap">字幕：通用 HTML 视频导出</div>
+</div>
+<script>
+  // ?nogpu hides WebGPU, to test the RGBA readback fallback of --depth 10.
+  if (new URLSearchParams(location.search).has("nogpu")) Object.defineProperty(Navigator.prototype, "gpu", { get: () => undefined });
+  const canvas = document.getElementById('gl');
+  const scale = window.devicePixelRatio;
+  canvas.width = 560 * scale; canvas.height = 480 * scale;
+  const gl = canvas.getContext('webgl2', { alpha: false });
+  window.webreel = {
+    duration: 3,
+    frame(t) {
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(1 - t / 3, 0.25, t / 3, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.enable(gl.SCISSOR_TEST); gl.scissor(Math.round((40 + t * 120) * scale), Math.round(160 * scale), Math.round(120 * scale), Math.round(120 * scale));
+      gl.clearColor(1, 1, 1, 1); gl.clear(gl.COLOR_BUFFER_BIT); gl.disable(gl.SCISSOR_TEST);
+      document.getElementById('title').textContent = `帧 ${Math.round(t * 30)}`;
+      document.getElementById('dot').style.left = (60 + t * 160) + 'px';
+      document.getElementById('cap').style.opacity = String(0.4 + 0.6 * Math.abs(Math.sin(t * 3)));
+    }
+  };
+  if (!window.webreelHost) { const t0 = performance.now(); const loop = () => { webreel.frame(((performance.now() - t0) / 1000) % 3); requestAnimationFrame(loop); }; loop(); }
+</script>

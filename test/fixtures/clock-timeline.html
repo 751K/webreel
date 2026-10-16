@@ -1,0 +1,38 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>clock: tween timeline</title>
+<!-- No window.webreel: a small GSAP-style tween engine on its own rAF ticker, plus a
+     Web Animations API animation started from a timer. Needs --duration. -->
+<style>
+  html, body { margin: 0; background: #0d1117; color: #e6edf3; font: 600 44px "PingFang SC", sans-serif; overflow: hidden; }
+  .bar { position: absolute; left: 160px; height: 70px; border-radius: 12px; background: linear-gradient(90deg, #3b8fd9, #3ccb9e); width: 0; }
+  .label { position: absolute; left: 160px; font-size: 32px; opacity: 0; }
+  #badge { position: absolute; right: 160px; top: 140px; padding: 20px 36px; border-radius: 999px; background: #f2a541; color: #111; opacity: 0; }
+</style>
+<div id="badge">GPU ×16</div>
+<script>
+  const tweens = [], start = Date.now();
+  const ease = p => 1 - Math.pow(1 - p, 3);
+  const to = (el, props, { delay = 0, duration = 1 }) => tweens.push({ el, props, delay, duration, from: null });
+  const values = [0.35, 0.8, 0.55, 0.95];
+  values.forEach((v, i) => {
+    const bar = document.createElement('div'); bar.className = 'bar'; bar.style.top = `${300 + i * 140}px`; document.body.appendChild(bar);
+    const label = document.createElement('div'); label.className = 'label'; label.style.top = `${250 + i * 140}px`; label.textContent = `核心 ${i + 1} · ${Math.round(v * 100)}%`; document.body.appendChild(label);
+    to(bar, { width: v * 1400 }, { delay: 0.2 + i * 0.25, duration: 1.2 });
+    to(label, { opacity: 1 }, { delay: 0.5 + i * 0.25, duration: 0.6 });
+  });
+  function ticker() {
+    const t = (Date.now() - start) / 1000;
+    for (const tw of tweens) {
+      const p = Math.min(1, Math.max(0, (t - tw.delay) / tw.duration));
+      if (p <= 0) continue;
+      tw.from ??= Object.fromEntries(Object.keys(tw.props).map(k => [k, parseFloat(getComputedStyle(tw.el)[k]) || 0]));
+      for (const [k, v] of Object.entries(tw.props)) tw.el.style[k] = (tw.from[k] + (v - tw.from[k]) * ease(p)) + (k === 'opacity' ? '' : 'px');
+    }
+    requestAnimationFrame(ticker);
+  }
+  requestAnimationFrame(ticker);
+  setTimeout(() => document.getElementById('badge').animate(
+    [{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1)' }],
+    { duration: 600, easing: 'ease-out', fill: 'forwards' }), 1600);
+</script>

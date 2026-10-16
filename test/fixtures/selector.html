@@ -1,0 +1,12 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>selector fixture</title>
+<style>
+  html, body { margin: 0; background: #0b1020; }
+  /* child combinator on body: breaks once the page is moved into the capture canvas */
+  body > .title { position: absolute; left: 200px; top: 400px; font: 700 120px sans-serif; color: #ffd166; }
+</style>
+<div class="title" id="t">SELECTOR</div>
+<script>
+  window.webreel = { duration: 1, frame(t) { document.getElementById('t').style.letterSpacing = (t * 20) + 'px'; } };
+</script>

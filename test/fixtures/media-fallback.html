@@ -1,0 +1,30 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>media fallback</title>
+<style>
+  /* CSS on or around a canvas that the html-in-canvas compositor cannot reproduce:
+     ?case=backdrop | mask | mirror | parent-filter. Each must fall back to screenshots. */
+  body { margin: 0; background: #0b1020; }
+  .wrap { position: absolute; left: 100px; top: 100px; width: 600px; height: 400px; }
+  #gl { width: 600px; height: 400px; display: block; }
+  .glass { position: absolute; left: 300px; top: 200px; width: 500px; height: 300px; border-radius: 24px;
+    background: rgba(255, 255, 255, .12); backdrop-filter: blur(12px); }
+  .mask #gl { mask-image: linear-gradient(#000, transparent); }
+  .mirror #gl { transform: scaleX(-1); }
+  .parent-filter .wrap { filter: blur(2px); }
+</style></head>
+<body>
+<div class="wrap"><canvas id="gl" width="600" height="400"></canvas></div>
+<div class="glass"></div>
+<script>
+const kind = new URLSearchParams(location.search).get('case');
+document.body.classList.add(kind);
+if (kind !== 'backdrop') document.querySelector('.glass').remove();
+const gl = document.getElementById('gl').getContext('webgl2', { alpha: false });
+window.webreel = { duration: 0.5, frame(t) {
+  gl.clearColor(.2 + t, .45, .7, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.enable(gl.SCISSOR_TEST); gl.scissor(0, 0, 200, 400); gl.clearColor(1, .8, .2, 1); gl.clear(gl.COLOR_BUFFER_BIT); gl.disable(gl.SCISSOR_TEST);
+} };
+</script>
+</body></html>

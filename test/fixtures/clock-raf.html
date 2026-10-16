@@ -1,0 +1,34 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>clock: requestAnimationFrame</title>
+<!-- No window.webreel: a stateful requestAnimationFrame loop (integrates velocity
+     per frame), a 2D canvas, timers and Date. Needs --duration. -->
+<style>
+  html, body { margin: 0; background: #101418; color: #fff; font: 600 48px "PingFang SC", sans-serif; overflow: hidden; }
+  canvas { position: absolute; left: 0; top: 0; }
+  #hud { position: absolute; left: 60px; top: 40px; }
+  #cap { position: absolute; left: 60px; bottom: 60px; font-size: 40px; color: #ffd166; }
+</style>
+<canvas id="c" width="1920" height="1080"></canvas>
+<div id="hud">t = 0.00 s</div>
+<div id="cap">等待计时器</div>
+<script>
+  const ctx = document.getElementById('c').getContext('2d');
+  const balls = Array.from({ length: 12 }, (_, i) => ({ x: 100 + i * 140, y: 200, vy: 0, r: 30 + (i % 3) * 10, hue: i * 30 }));
+  const t0 = performance.now(), d0 = Date.now();
+  let last = t0;
+  function tick(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    ctx.fillStyle = 'rgba(16,20,24,0.35)'; ctx.fillRect(0, 0, 1920, 1080);   // trails depend on every frame
+    for (const b of balls) {
+      b.vy += 2000 * dt; b.y += b.vy * dt;
+      if (b.y > 900 - b.r) { b.y = 900 - b.r; b.vy *= -0.82; }
+      ctx.fillStyle = `hsl(${b.hue} 80% 60%)`; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+    }
+    document.getElementById('hud').textContent = `t = ${((Date.now() - d0) / 1000).toFixed(2)} s`;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  setTimeout(() => { document.getElementById('cap').textContent = '1.5 s 计时器已触发'; }, 1500);
+  let n = 0; setInterval(() => { n++; document.getElementById('cap').style.opacity = String(0.5 + 0.5 * (n % 2)); }, 500);
+</script>
